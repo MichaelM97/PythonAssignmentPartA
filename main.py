@@ -36,26 +36,49 @@ class FileInformation:
 
     # Allow access to Root file list and file names
     global fileList
+    fileList = os.listdir()
+    fileList.remove('.idea')
+    fileList.remove('main.py')
+    fileList.remove('.git')
+    global maleScoresFile
+    global femaleScoresFile
     global rankingPointsFile
     global prizeMoneyFile
     global malePlayersFile
     global femalePlayersFile
 
     def get_score_files(self):
-        print("Getting score from files...\n")
+        # Get MALE SCORE File Name
+        while True:
+            for f, fileName in enumerate(fileList):
+                print(f, "-", fileName)
+            userInput = input("\nPlease select the file containing the MALE PLAYERS scores: ")
+            if (int(userInput) < 0) or (int(userInput) > len(fileList)):
+                print("Invalid Input!!!\n")
+            else:
+                break
+        maleScoresFile = fileList[int(userInput)]
+        fileList.remove(maleScoresFile)
+
+        # Get FEMALE SCORE File Name
+        while True:
+            for f, fileName in enumerate(fileList):
+                print(f, "-", fileName)
+            userInput = input("\nPlease select the file containing the FEMALE PLAYERS scores: ")
+            if (int(userInput) < 0) or (int(userInput) > len(fileList)):
+                print("Invalid Input!!!\n")
+            else:
+                break
+        femaleScoresFile = fileList[int(userInput)]
+        fileList.remove(femaleScoresFile)
 
     def get_score_input(self):
-        global scoresFile
-        scoresFile = 'null'
+        #global scoresFile
+        #scoresFile = 'null'
         print("Get score from user input")
 
     def get_file_names(self):
-        fileList = os.listdir()
-        fileList.remove('.idea')
-        fileList.remove('main.py')
-        if scoresFile != 'null':
-            fileList.remove(scoresFile)
-
+        #region Retrieve file names from user
         # Get RANKING POINTS File Name
         while True:
             for f, fileName in enumerate(fileList):
@@ -103,10 +126,7 @@ class FileInformation:
                 break
         femalePlayersFile = fileList[int(userInput)]
         fileList.remove(femalePlayersFile)
-
-
-
-
+        #endregion
 
     def get_file_info(self):
         with open('DADSA 17-18 COURSEWORK A RANKING POINTS.csv', "rb") as f:
