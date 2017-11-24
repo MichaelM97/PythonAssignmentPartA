@@ -8,7 +8,9 @@ import os
 def main():
     fileInfo = FileInformation()
 
-    fileInfo.get_file_names()
+    fileInfo.store_file_info()
+
+    #fileInfo.get_file_names()
 
 def menu():
     print("Please select an option:\n\n1 - Read players score from file\n2 - Enter players score manually\n:: ")
@@ -34,18 +36,29 @@ class FileInformation:
     TAW11_DIFFICULTY = 3.1
     TBS2_DIFFICULTY = 3.25
 
-    # Allow access to Root file list and file names
+    # Allow global access to Root file list, and remove irrelevant files
     global fileList
     fileList = os.listdir()
     fileList.remove('.idea')
     fileList.remove('main.py')
     fileList.remove('.git')
+
+    # Allow global access to file names
     global maleScoresFile
     global femaleScoresFile
     global rankingPointsFile
     global prizeMoneyFile
     global malePlayersFile
     global femalePlayersFile
+
+    # Arrays used to store file information
+    global maleScoresInfo
+    global femaleScoresInfo
+    global rankingPointsInfo
+    global prizeMoneyInfo
+    global malePlayersInfo
+    global femalePlayersInfo
+
 
     def get_score_files(self):
         # Get MALE SCORE File Name
@@ -128,12 +141,13 @@ class FileInformation:
         fileList.remove(femalePlayersFile)
         #endregion
 
-    def get_file_info(self):
-        with open('DADSA 17-18 COURSEWORK A RANKING POINTS.csv', "rb") as f:
-            reader = csv.reader(f)
-        for row in reader:
-            print(row)
+    def store_file_info(self):
+        #Store RANKING FILE information in array
+        with open(rankingPointsFile) as csvfile:
+            readCSV = csv.reader(csvfile, delimiter=',')
+            for row in readCSV:
+                print(row)
 
 
-menu()
+#menu()
 if __name__ == "__main__": main()
