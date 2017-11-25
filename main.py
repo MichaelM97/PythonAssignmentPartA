@@ -23,8 +23,14 @@ def menu():
 
     if userInput == '1':
         fileInfo.get_score_files()
+        fileInfo.set_difficulty(maleScoresFile) # Set difficulty using file name
+        print(tournamentName)
+        print(tournamentDifficulty)
     elif userInput == '2':
         fileInfo.get_score_input()
+        fileInfo.set_difficulty("")  # Set difficulty using user input
+        print(tournamentName)
+        print(tournamentDifficulty)
     else:
         print("Invalid Input!\n\n")
         menu()
@@ -33,9 +39,13 @@ def menu():
 class FileInformation:
 
     # Degree's of difficulty
+    global TAC1_DIFFICULTY
     TAC1_DIFFICULTY = 2.7
+    global TAE21_DIFFICULTY
     TAE21_DIFFICULTY = 2.3
+    global TAW11_DIFFICULTY
     TAW11_DIFFICULTY = 3.1
+    global TBS2_DIFFICULTY
     TBS2_DIFFICULTY = 3.25
 
     # Allow global access to Root file list, and remove irrelevant files
@@ -91,9 +101,32 @@ class FileInformation:
         femaleScoresFile = fileList[int(userInput)]
         fileList.remove(femaleScoresFile)
 
+
+
+
     def get_score_input(self):
         print("Get score from user input")
         # USES LIST OF PLAYER NAMES TO ALLOW SELECTION OF WHO PLAYED WHO, AND WHO SCORED WHAT, KEEP THE SAME LAYOUT AS FILES
+
+    def set_difficulty(self, tournament):
+        global tournamentName
+        global tournamentDifficulty
+
+        if 'TAC1' in tournament:
+            tournamentName = 'TAC1'
+            tournamentDifficulty = TAC1_DIFFICULTY
+        elif 'TAE21' in tournament:
+            tournamentName = 'TAE21'
+            tournamentDifficulty = TAE21_DIFFICULTY
+        elif 'TAW11' in tournament:
+            tournamentName = 'TAW11'
+            tournamentDifficulty = TAW11_DIFFICULTY
+        elif 'TBS2' in tournament:
+            tournamentName = 'TBS2'
+            tournamentDifficulty = TBS2_DIFFICULTY
+        else:
+            userInput = input("Could not find difficulty, please enter Tournament Name:")
+            FileInformation.set_difficulty(self, userInput)
 
     def get_file_names(self):
         #region Retrieve file names from user
@@ -173,17 +206,22 @@ class FileInformation:
             for row in readCsv:
                 rankingPointsInfo.append(row[0])
 
-        tournamentName = 'TAC1'
-        # Store RANKING POINTS FILE information in array
+        # Store PRIZE MONEY FILE information in array
         with open(prizeMoneyFile) as csvFile:
-            readCsv = csv.reader(csvFile)
-            for i, row in enumerate(readCsv):
-                if row[0] == tournamentName:
-                    for i in readCsv in range(8):
-                        print(i[2])                  # WANT TO ONLY ADD THE 8 PRIZE AMOUNTS FOR THE TOURNAMENT WE ARE USING
-                        # prizeMoneyFile.append(row[2])
-                break
-            # print(prizeMoneyFile[1])
+            readCsv = csv.reader(csvFile, delimiter=',')
+            found = False
+            count = 0
+            for row in readCsv:
+                if tournamentName in row[0]:
+                    found = True
+                    print("FOUND")
+                if found is True:
+                    prizeMoneyInfo.append(row[2])
+                    count += 1    # DONT HARD CODE THIS CHAAANNGGEEEE
+                    print(prizeMoneyInfo)
+                    if count >= 8:
+                        break
+
 
 
 
