@@ -8,9 +8,11 @@ import os
 def main():
     fileInfo = FileInformation()
 
+    fileInfo.get_file_names()
+
     fileInfo.store_file_info()
 
-    #fileInfo.get_file_names()
+
 
 def menu():
     print("Please select an option:\n\n1 - Read players score from file\n2 - Enter players score manually\n:: ")
@@ -43,24 +45,26 @@ class FileInformation:
     fileList.remove('main.py')
     fileList.remove('.git')
 
-    # Allow global access to file names
-    global maleScoresFile
-    global femaleScoresFile
-    global rankingPointsFile
-    global prizeMoneyFile
-    global malePlayersFile
-    global femalePlayersFile
-
     # Arrays used to store file information
     global maleScoresInfo
+    maleScoresInfo = []
     global femaleScoresInfo
+    femaleScoresInfo = []
     global rankingPointsInfo
-    global prizeMoneyInfo
+    rankingPointsInfo = []
     global malePlayersInfo
+    malePlayersInfo = []
     global femalePlayersInfo
+    femalePlayersInfo = []
+    global prizeMoneyInfo
+    prizeMoneyInfo = []
+
 
 
     def get_score_files(self):
+
+        # SEARCH STRING FOR WORD,,, TO IDENTIFY DIFFICULTY I.E TAC1, ASK FOR THIS FROM USER INPUT
+
         # Get MALE SCORE File Name
         while True:
             for f, fileName in enumerate(fileList):
@@ -70,6 +74,7 @@ class FileInformation:
                 print("Invalid Input!!!\n")
             else:
                 break
+        global maleScoresFile
         maleScoresFile = fileList[int(userInput)]
         fileList.remove(maleScoresFile)
 
@@ -82,13 +87,13 @@ class FileInformation:
                 print("Invalid Input!!!\n")
             else:
                 break
+        global femaleScoresFile
         femaleScoresFile = fileList[int(userInput)]
         fileList.remove(femaleScoresFile)
 
     def get_score_input(self):
-        #global scoresFile
-        #scoresFile = 'null'
         print("Get score from user input")
+        # USES LIST OF PLAYER NAMES TO ALLOW SELECTION OF WHO PLAYED WHO, AND WHO SCORED WHAT, KEEP THE SAME LAYOUT AS FILES
 
     def get_file_names(self):
         #region Retrieve file names from user
@@ -101,6 +106,7 @@ class FileInformation:
                 print("Invalid Input!!!\n")
             else:
                 break
+        global rankingPointsFile
         rankingPointsFile = fileList[int(userInput)]
         fileList.remove(rankingPointsFile)
 
@@ -113,6 +119,7 @@ class FileInformation:
                 print("Invalid Input!!!\n")
             else:
                 break
+        global prizeMoneyFile
         prizeMoneyFile = fileList[int(userInput)]
         fileList.remove(prizeMoneyFile)
 
@@ -125,6 +132,7 @@ class FileInformation:
                 print("Invalid Input!!!\n")
             else:
                 break
+        global malePlayersFile
         malePlayersFile = fileList[int(userInput)]
         fileList.remove(malePlayersFile)
 
@@ -137,17 +145,48 @@ class FileInformation:
                 print("Invalid Input!!!\n")
             else:
                 break
+        global femalePlayersFile
         femalePlayersFile = fileList[int(userInput)]
         fileList.remove(femalePlayersFile)
         #endregion
 
     def store_file_info(self):
-        #Store RANKING FILE information in array
-        with open(rankingPointsFile) as csvfile:
-            readCSV = csv.reader(csvfile, delimiter=',')
-            for row in readCSV:
-                print(row)
+        # Store MALE PLAYERS FILE information in array
+        with open(malePlayersFile) as csvFile:
+            readCsv = csv.reader(csvFile, delimiter=',')
+            for i, row in enumerate(readCsv):
+                malePlayersInfo.append(row[0])
+            global malePlayerCount
+            malePlayerCount = i + 1
+
+        # Store MALE PLAYERS FILE information in array
+        with open(femalePlayersFile) as csvFile:
+            readCsv = csv.reader(csvFile, delimiter=',')
+            for i, row in enumerate(readCsv):
+                femalePlayersInfo.append(row[0])
+            global femalePlayerCount
+            femalePlayerCount = i + 1
+
+        # Store RANKING POINTS FILE information in array
+        with open(rankingPointsFile) as csvFile:
+            readCsv = csv.reader(csvFile, delimiter=',')
+            for row in readCsv:
+                rankingPointsInfo.append(row[0])
+
+        tournamentName = 'TAC1'
+        # Store RANKING POINTS FILE information in array
+        with open(prizeMoneyFile) as csvFile:
+            readCsv = csv.reader(csvFile)
+            for i, row in enumerate(readCsv):
+                if row[0] == tournamentName:
+                    for i in readCsv in range(8):
+                        print(i[2])                  # WANT TO ONLY ADD THE 8 PRIZE AMOUNTS FOR THE TOURNAMENT WE ARE USING
+                        # prizeMoneyFile.append(row[2])
+                break
+            # print(prizeMoneyFile[1])
 
 
-#menu()
+
+
+menu()
 if __name__ == "__main__": main()
