@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="BookmarkManager">
-    <bookmark url="file://$PROJECT_DIR$/main.py" line="213" />
+    <bookmark url="file://$PROJECT_DIR$/main.py" line="225" />
   </component>
   <component name="ChangeListManager">
     <list default="true" id="5050929d-3755-4a4b-a449-014e1dad6185" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/DADSA 17-18 COURSEWORK A TAC1 ROUND 1 LADIES(1).csv" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/main.py" afterPath="$PROJECT_DIR$/main.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -16,17 +16,19 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="CoverageDataManager">
-    <SUITE FILE_PATH="coverage/Python_Project$main.coverage" NAME="main Coverage Results" MODIFIED="1511637239667" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/Python_Project$main.coverage" NAME="main Coverage Results" MODIFIED="1511661328811" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file leaf-file-name="main.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/main.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="340">
-              <caret line="109" column="0" lean-forward="true" selection-start-line="109" selection-start-column="0" selection-end-line="109" selection-end-column="0" />
+            <state relative-caret-position="552">
+              <caret line="201" column="0" lean-forward="true" selection-start-line="201" selection-start-column="0" selection-end-line="201" selection-end-column="0" />
               <folding>
                 <element signature="e#74#84#0" expanded="true" />
+                <element signature="e#3866#4580#0" expanded="false" />
+                <element signature="e#4620#6726#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -193,7 +195,7 @@
       <breakpoints-defaults>
         <breakpoint type="python-line" />
       </breakpoints-defaults>
-      <option name="time" value="18" />
+      <option name="time" value="34" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -204,6 +206,8 @@
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#74#84#0" expanded="true" />
+            <element signature="e#3866#4580#0" expanded="false" />
+            <element signature="e#4620#6726#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -214,6 +218,8 @@
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#74#84#0" expanded="true" />
+            <element signature="e#3866#4580#0" expanded="false" />
+            <element signature="e#4620#6726#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -224,6 +230,8 @@
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#74#84#0" expanded="true" />
+            <element signature="e#3866#4580#0" expanded="false" />
+            <element signature="e#4620#6726#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -234,6 +242,8 @@
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#74#84#0" expanded="true" />
+            <element signature="e#3866#4580#0" expanded="false" />
+            <element signature="e#4620#6726#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -244,6 +254,8 @@
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#74#84#0" expanded="true" />
+            <element signature="e#3866#4580#0" expanded="false" />
+            <element signature="e#4620#6726#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -251,10 +263,12 @@
     <entry file="file://$PROJECT_DIR$/FileInfo.py" />
     <entry file="file://$PROJECT_DIR$/main.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="340">
-          <caret line="109" column="0" lean-forward="true" selection-start-line="109" selection-start-column="0" selection-end-line="109" selection-end-column="0" />
+        <state relative-caret-position="552">
+          <caret line="201" column="0" lean-forward="true" selection-start-line="201" selection-start-column="0" selection-end-line="201" selection-end-column="0" />
           <folding>
             <element signature="e#74#84#0" expanded="true" />
+            <element signature="e#3866#4580#0" expanded="false" />
+            <element signature="e#4620#6726#0" expanded="false" />
           </folding>
         </state>
       </provider>
