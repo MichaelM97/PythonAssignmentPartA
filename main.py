@@ -9,34 +9,54 @@ import sys
 def main():
     fileInfo = FileInformation() # Create object to access class
 
+    # Get required information from files and possibly user input
     fileInfo.get_file_names()
-
     menu()
 
-    fileInfo.store_file_info()
+    # Store information from selected files
+    fileInfo.store_ranking_info()
+    fileInfo.store_prize_info()
 
+    # Get file selection from user, and loop through to calculate top 16 players scores
     count = 1
     if scoreChoice == '1':
-        while maleRankingPosition > 1 and femaleRankingPosition > 1:
+        while maleRankingPosition > 1 and femaleRankingPosition > 1:  # While they're players remaining
             count += 1
             fileInfo.get_score_files(count)
-            with open(maleScoresFile) as csvFile:
+            with open(maleScoresFile) as csvFile:  # Open the selected file
                 readCsv = csv.reader(csvFile, delimiter=',')
-                if len(list(readCsv)) <= 9: # Ensures that only top 16 players are processed
-                    fileInfo.process_scores()
+                if len(list(readCsv)) <= 9:  # Ensures that only top 16 players are processed
+                    fileInfo.process_file_scores()
 
+    # Get score input from user, and loop through to calculate top 16 players scores
+    elif scoreChoice == '2':
+        while maleRankingPosition > 1 and femaleRankingPosition > 1:  # While they're players remaining
+            count += 1
+            fileInfo.reset_player_names()
+            fileInfo.get_score_input(count)
+            if len(list(maleUserScores)) <= 9:  # Ensures that only top 16 players are processed
+                fileInfo.process_user_scores()
 
+    # Calculate players winnings and display results
     fileInfo.process_winnings()
-
     fileInfo.display_results()
 
-    userInput = input("Would you like to store these results in a file? [Y/N]: ").upper()
+    # Store results in a file (if users chooses to)
+    while True:
+        userInput = input("Would you like to store these results in a file? [Y/N]: ").upper()
+        if userInput == 'Y':
+            fileInfo.store_result_file()
+            break
+        elif userInput == 'N':
+            print("Scores will not be saved.")
+            break
+        else:
+            print("Invalid Input!!!\n")
 
-    if userInput == 'Y':
-        fileInfo.store_result_file()
 
-
+# Allows user to choose to enter scores manually or from files
 def menu():
+    clear_screen()
     print("Please select an option:\n\n1 - Read players score from file\n2 - Enter players score manually\n:: ")
 
     global scoreChoice
@@ -44,17 +64,35 @@ def menu():
 
     fileInfo = FileInformation()
 
-    if scoreChoice == '1':
-        fileInfo.get_score_files(1)
-        fileInfo.set_difficulty(maleScoresFile) # Set difficulty using file name            CHANGE MENU TO ONLY BE CALLED IN MAIN AND RETURN scoreChoice, DO THIS STUFF IN MAIN
-    elif scoreChoice == '2':
-        fileInfo.get_score_input(1)
-        fileInfo.set_difficulty("")  # Set difficulty using user input
+    while True:
+        if scoreChoice == '1':
+            fileInfo.get_score_files(1)
+            with open(maleScoresFile) as csvFile:
+                readCsv = csv.reader(csvFile, delimiter=',')
+                if len(list(readCsv)) <= 9:  # Ensures that only top 16 players are processed
+                    fileInfo.process_file_scores()
+            fileInfo.set_difficulty(maleScoresFile)  # Set difficulty using file name
+            break
+        elif scoreChoice == '2':
+            fileInfo.store_player_names()  # Stores player names so user can identify who scored what
+            fileInfo.get_score_input(1)
+            if len(list(maleUserScores)) <= 9:  # Ensures that only top 16 players are processed
+                fileInfo.process_user_scores()
+            fileInfo.set_difficulty("")  # Set difficulty using user input
+            break
+        else:
+            print("Invalid Input!\n\n")
+
+
+# Clears display screen (checks if Windows or Linux as command differs)
+def clear_screen():
+    if os.name == 'nt':
+        os.system('cls')
     else:
-        print("Invalid Input!\n\n")
-        menu()
+        os.system('clear')
 
 
+# Class holds all information and functions related to storing and manipulating file data
 class FileInformation:
 
     # Degree's of difficulty
@@ -67,7 +105,7 @@ class FileInformation:
     global TBS2_DIFFICULTY
     TBS2_DIFFICULTY = 3.25
 
-    # Allow global access to Root file list, and remove irrelevant files (if they exist)
+    # Allow global access to root directory file list, removes irrelevant files (if they exist)
     global fileList
     fileList = os.listdir()
     if '.idea' in fileList:
@@ -84,10 +122,10 @@ class FileInformation:
     femaleScoresInfo = []
     global rankingPointsInfo
     rankingPointsInfo = []
-    global malePlayersInfo
-    malePlayersInfo = []
-    global femalePlayersInfo
-    femalePlayersInfo = []
+    global malePlayerNames
+    malePlayerNames = []
+    global femalePlayerNames
+    femalePlayerNames = []
     global prizeMoneyInfo
     prizeMoneyInfo = []
     global malePlayerRankings
@@ -98,9 +136,15 @@ class FileInformation:
     malePlayerWinners = []
     global femalePlayerWinners
     femalePlayerWinners = []
+    global maleUserScores
+    maleUserScores = []
+    global femaleUserScores
+    femaleUserScores = []
 
+    # Get names of files containing player scores
     def get_score_files(self, roundNum):
-        # Get MALE SCORE File Name
+        clear_screen()
+        # Get MALE SCORES File Name
         while True:
             for f, fileName in enumerate(fileList):
                 print(f, "-", fileName)
@@ -110,10 +154,11 @@ class FileInformation:
             else:
                 break
         global maleScoresFile
-        maleScoresFile = fileList[int(userInput)]
-        fileList.remove(maleScoresFile)
+        maleScoresFile = fileList[int(userInput)]  # Stores male file name globally
+        fileList.remove(maleScoresFile)  # Removes file from list so it cannot be selected again
 
-        # Get FEMALE SCORE File Name
+        clear_screen()
+        # Get FEMALE SCORES File Name
         while True:
             for f, fileName in enumerate(fileList):
                 print(f, "-", fileName)
@@ -123,13 +168,116 @@ class FileInformation:
             else:
                 break
         global femaleScoresFile
-        femaleScoresFile = fileList[int(userInput)]
-        fileList.remove(femaleScoresFile)
+        femaleScoresFile = fileList[int(userInput)]  # Stores female file name globally
+        fileList.remove(femaleScoresFile)  # Removes file from list so it cannot be selected again
 
-    def get_score_input(self):
-        print("Get score from user input")
-        # USES LIST OF PLAYER NAMES TO ALLOW SELECTION OF WHO PLAYED WHO, AND WHO SCORED WHAT, KEEP THE SAME LAYOUT AS FILES
+    # Allows user to input scores
+    def get_score_input(self, roundNum):
+        # Get MALE PLAYER scores as input
+        global maleUserScores
+        maleUserScores = []
+        while len(malePlayerNames) > 1:  # While there are still male players left without a score
+            clear_screen()
+            print("Entering MALE PLAYER scores for round %d: \n" % roundNum)
+            row = []
+            # User selects first player in match
+            for i, name in enumerate(malePlayerNames):  # List all available players
+                print(i + 1, "-", name)
+            while True:
+                userInput = input("\nPlease select the first player: ")
+                if int(userInput) < 1 or int(userInput) > len(malePlayerNames):
+                    print("Invalid Input!\n")
+                else:
+                    break
+            row.append(malePlayerNames[int(userInput) - 1])
+            malePlayerNames.remove(malePlayerNames[int(userInput) - 1])
+            # User enters the first players score
+            while True:
+                firstScore = input("\nPlease enter the first players score[0-3]: ")
+                if int(firstScore) < 0 or int(firstScore) > 3:
+                    print("Invalid Input!\n")
+                else:
+                    break
+            row.append(firstScore)
 
+            # User selects second player in match
+            for i, name in enumerate(malePlayerNames):  # List all available players
+                print(i + 1, "-", name)
+            while True:
+                userInput = input("\nPlease select the second player: ")
+                if int(userInput) < 1 or int(userInput) > len(malePlayerNames):
+                    print("Invalid Input!\n")
+                else:
+                    break
+            row.append(malePlayerNames[int(userInput) - 1])
+            malePlayerNames.remove(malePlayerNames[int(userInput) - 1])
+            # User enters the second players score
+            while True:
+                secondScore = input("\nPlease enter the second players score[0-3]: ")
+                if int(secondScore) < 0 or int(secondScore) > 3:
+                    print("Invalid Input!\n")
+                elif (int(firstScore) + int(secondScore)) > 5:
+                    print("Invalid Input! There can only be a total of 5 games per pair.\n")
+                elif int(firstScore) != 3 and int(secondScore) != 3:
+                    print("Invalid Input! One player must win 3 games, or there is no winner.\n")
+                else:
+                    break
+            row.append(secondScore)
+            maleUserScores.append(row)  # Store data entered into global array for later processing
+
+        global femaleUserScores
+        femaleUserScores = []
+        # Get FEMALE PLAYER scores as input
+        clear_screen()
+        print("Entering FEMALE PLAYER scores for round %d: \n" % roundNum)
+        while len(femalePlayerNames) > 1:  # While there are still female players left without a score
+            row = []
+            # User selects first player in match
+            for i, name in enumerate(femalePlayerNames):  # List all available players
+                print(i + 1, "-", name)
+            while True:
+                userInput = input("\nPlease select the first player: ")
+                if int(userInput) < 1 or int(userInput) > len(femalePlayerNames):
+                    print("Invalid Input!\n")
+                else:
+                    break
+            row.append(femalePlayerNames[int(userInput) - 1])
+            femalePlayerNames.remove(femalePlayerNames[int(userInput) - 1])
+            # User enters the first players score
+            while True:
+                firstScore = input("\nPlease enter the first players score[0-3]: ")
+                if int(firstScore) < 0 or int(firstScore) > 3:
+                    print("Invalid Input!\n")
+                else:
+                    break
+            row.append(firstScore)
+
+            # User selects second player in match
+            for i, name in enumerate(femalePlayerNames):  # List all available players
+                print(i + 1, "-", name)
+            while True:
+                userInput = input("\nPlease select the second player: ")
+                if int(userInput) < 1 or int(userInput) > len(femalePlayerNames):
+                    print("Invalid Input!\n")
+                else:
+                    break
+            row.append(femalePlayerNames[int(userInput) - 1])
+            femalePlayerNames.remove(femalePlayerNames[int(userInput) - 1])
+            # User enters the second players score
+            while True:
+                secondScore = input("\nPlease enter the second players score[0-3]: ")
+                if int(secondScore) < 0 or int(secondScore) > 3:
+                    print("Invalid Input!\n")
+                elif (int(firstScore) + int(secondScore)) > 5:
+                    print("Invalid Input! There can only be a total of 5 games per pair.\n")
+                elif int(firstScore) != 3 and int(secondScore) != 3:
+                    print("Invalid Input! One player must win 3 games, or there is no winner.\n")
+                else:
+                    break
+            row.append(secondScore)
+            femaleUserScores.append(row)  # Store data entered into global array for later processing
+
+    # Sets the tournament name and difficulty based on file name, or user input
     def set_difficulty(self, tournament):
         global tournamentName
         global tournamentDifficulty
@@ -150,20 +298,23 @@ class FileInformation:
             userInput = input("Could not find difficulty, please enter Tournament Name:")
             FileInformation.set_difficulty(self, userInput)
 
+    # Allows user to select files containing required information
     def get_file_names(self):
+        clear_screen()
         # Get RANKING POINTS File Name
         while True:
             for f, fileName in enumerate(fileList):
-             print(f, "-", fileName)
+                print(f, "-", fileName)
             userInput = input("\nPlease select the file containing RANKING POINTS information: ")
             if (int(userInput) < 0) or (int(userInput) > len(fileList)):
                 print("Invalid Input!!!\n")
             else:
                 break
         global rankingPointsFile
-        rankingPointsFile = fileList[int(userInput)]
-        fileList.remove(rankingPointsFile)
+        rankingPointsFile = fileList[int(userInput)]  # Stores ranking points file name globally
+        fileList.remove(rankingPointsFile)  # Removes file from list so it cannot be selected again
 
+        clear_screen()
         # Get PRIZE MONEY File Name
         while True:
             for f, fileName in enumerate(fileList):
@@ -174,9 +325,10 @@ class FileInformation:
             else:
                 break
         global prizeMoneyFile
-        prizeMoneyFile = fileList[int(userInput)]
-        fileList.remove(prizeMoneyFile)
+        prizeMoneyFile = fileList[int(userInput)]  # Stores prize money file name globally
+        fileList.remove(prizeMoneyFile)  # Removes file from list so it cannot be selected again
 
+        clear_screen()
         # Get MALE PLAYERS File Name
         while True:
             for f, fileName in enumerate(fileList):
@@ -187,9 +339,10 @@ class FileInformation:
             else:
                 break
         global malePlayersFile
-        malePlayersFile = fileList[int(userInput)]
-        fileList.remove(malePlayersFile)
+        malePlayersFile = fileList[int(userInput)]  # Stores male players file name globally
+        fileList.remove(malePlayersFile)  # Removes file from list so it cannot be selected again
 
+        clear_screen()
         # Get FEMALE PLAYERS File Name
         while True:
             for f, fileName in enumerate(fileList):
@@ -200,67 +353,90 @@ class FileInformation:
             else:
                 break
         global femalePlayersFile
-        femalePlayersFile = fileList[int(userInput)]
-        fileList.remove(femalePlayersFile)
+        femalePlayersFile = fileList[int(userInput)]  # Stores female players file name globally
+        fileList.remove(femalePlayersFile)  # Removes file from list so it cannot be selected again
 
-    def store_file_info(self):   # SEPERATE PLAYER NAMES, ONLY STORE THOSE FILES IF USER ENTERS SCORES MANUALLY
+    # Store player names provided from file
+    def store_player_names(self):
         # Store MALE PLAYERS FILE information in array
         with open(malePlayersFile) as csvFile:
             readCsv = csv.reader(csvFile, delimiter=',')
             for i, row in enumerate(readCsv):
-                malePlayersInfo.append(row[0])
-            global malePlayerCount
-            malePlayerCount = i + 1
+                malePlayerNames.append(row[0])
 
-        # Store MALE PLAYERS FILE information in array
+        # Store FEMALE PLAYERS FILE information in array
         with open(femalePlayersFile) as csvFile:
             readCsv = csv.reader(csvFile, delimiter=',')
             for i, row in enumerate(readCsv):
-                femalePlayersInfo.append(row[0])
-            global femalePlayerCount
-            femalePlayerCount = i + 1
+                femalePlayerNames.append(row[0])
 
-        # Store RANKING POINTS FILE information in array, and set male & female ranking position counters
+    # Adds back all winners to the player name arrays, allowing further processing of winners
+    def reset_player_names(self):
+        # Reset MALE PLAYER scores
+        for row in maleUserScores:
+            if row[1] > row[3]:
+                malePlayerNames.append(row[0])  # Adds winner back to list
+            elif row[1] < row[3]:
+                malePlayerNames.append(row[2])  # Adds winner back to list
+
+        # Reset FEMALE PLAYER scores
+        for row in femaleUserScores:
+            if row[1] > row[3]:
+                femalePlayerNames.append(row[0])  # Adds winner back to list
+            elif row[1] < row[3]:
+                femalePlayerNames.append(row[2])  # Adds winner back to list
+
+    # Stores required ranking points information from file provided by user
+    def store_ranking_info(self):
+        # Store RANKING POINTS FILE information in array
         with open(rankingPointsFile) as csvFile:
             readCsv = csv.reader(csvFile, delimiter=',')
             for i, row in enumerate(readCsv):
                 rankingPointsInfo.append(row[0])
+            # Set male and female ranking position counters
             global maleRankingPosition
             maleRankingPosition = i
             global femaleRankingPosition
             femaleRankingPosition = i
 
+    # Stores required prize money information from file provided by user
+    def store_prize_info(self):
         # Store PRIZE MONEY FILE information in array
         with open(prizeMoneyFile) as csvFile:
             readCsv = csv.reader(csvFile, delimiter=',')
             found = False
-            count = 0
+            previous = 0
             for row in readCsv:
                 if tournamentName in row[0]:
                     found = True
                 if found is True:
-                    prizeMoneyInfo.append(row[2])
-                    count += 1    # DONT HARD CODE THIS CHAAANNGGEEEE
-                    if count >= 8:
+                    if int(row[1]) < int(previous):  # Prevents storing other tournament values
                         break
+                    else:
+                        prizeMoneyInfo.append(row[2])
+                        previous = row[1]
 
-    def process_scores(self):
+    # Stores players in order of their scores given in a file
+    def process_file_scores(self):
         global maleRankingPosition
         global femaleRankingPosition
 
+        # Process MALE PLAYER scores
         with open(maleScoresFile) as csvFile:
             readCsv = csv.reader(csvFile, delimiter=',')
-            next(readCsv)
+            next(readCsv)  # Skip headers in file
+            # Calculate ranking points and assign them to losing player
             rankingPoints = int(rankingPointsInfo[maleRankingPosition]) * tournamentDifficulty
             for row in readCsv:
                 if row[1] > row[3]:
                     malePlayerRankings.append(row[2] + '-' + str(rankingPoints))
                 elif row[1] < row[3]:
                     malePlayerRankings.append(row[0] + '-' + str(rankingPoints))
-                else:
-                    print("\n\nERROR IN FILE!\n\n")
+                else:  # If no winner is found, display error and exit
+                    print("\n\nERROR IN SCORE ENTRY!!!\n\n")
                     sys.exit()
                 maleRankingPosition += -1
+                # If this is the last player, assign them the highest ranking points
                 if maleRankingPosition == 1:
                     rankingPoints = int(rankingPointsInfo[maleRankingPosition]) * tournamentDifficulty
                     if row[1] > row[3]:
@@ -268,19 +444,22 @@ class FileInformation:
                     elif row[1] < row[3]:
                         malePlayerRankings.append(row[2] + '-' + str(rankingPoints))
 
+        # Process FEMALE PLAYER scores
         with open(femaleScoresFile) as csvFile:
             readCsv = csv.reader(csvFile, delimiter=',')
-            next(readCsv)
+            next(readCsv)  # Skip headers in file
+            # Calculate ranking points and assign them to losing player
             rankingPoints = int(rankingPointsInfo[femaleRankingPosition]) * tournamentDifficulty
             for row in readCsv:
                 if row[1] > row[3]:
                     femalePlayerRankings.append(row[2] + '-' + str(rankingPoints))
                 elif row[1] < row[3]:
                     femalePlayerRankings.append(row[0] + '-' + str(rankingPoints))
-                else:
-                    print("\n\nERROR IN FILE!\n\n")
+                else:  # If no winner is found, display error and exit
+                    print("\n\nERROR IN SCORE ENTRY!!!\n\n")
                     sys.exit()
                 femaleRankingPosition += -1
+                # If this is the last player, assign them the highest ranking points
                 if femaleRankingPosition == 1:
                     rankingPoints = int(rankingPointsInfo[femaleRankingPosition]) * tournamentDifficulty
                     if row[1] > row[3]:
@@ -288,68 +467,128 @@ class FileInformation:
                     elif row[1] < row[3]:
                         femalePlayerRankings.append(row[2] + '-' + str(rankingPoints))
 
+    # Stores players in order of their scores given by the user
+    def process_user_scores(self):
+        global maleRankingPosition
+        global femaleRankingPosition
+
+        # Process MALE PLAYER scores
+        # Calculate ranking points and assign them to losing player
+        rankingPoints = int(rankingPointsInfo[maleRankingPosition]) * tournamentDifficulty
+        for row in maleUserScores:
+            if row[1] > row[3]:
+                malePlayerRankings.append(row[2] + '-' + str(rankingPoints))
+            elif row[1] < row[3]:
+                malePlayerRankings.append(row[0] + '-' + str(rankingPoints))
+            else:  # If no winner is found, display error and exit
+                print("\n\nERROR IN SCORE ENTRY!!!\n\n")
+                sys.exit()
+            maleRankingPosition += -1
+            # If this is the last player, assign them the highest ranking points
+            if maleRankingPosition == 1:
+                rankingPoints = int(rankingPointsInfo[maleRankingPosition]) * tournamentDifficulty
+                if row[1] > row[3]:
+                    malePlayerRankings.append(row[0] + '-' + str(rankingPoints))
+                elif row[1] < row[3]:
+                    malePlayerRankings.append(row[2] + '-' + str(rankingPoints))
+
+        # Process FEMALE PLAYER scores
+        # Calculate ranking points and assign them to losing player
+        rankingPoints = int(rankingPointsInfo[femaleRankingPosition]) * tournamentDifficulty
+        for row in femaleUserScores:
+            if row[1] > row[3]:
+                femalePlayerRankings.append(row[2] + '-' + str(rankingPoints))
+            elif row[1] < row[3]:
+                femalePlayerRankings.append(row[0] + '-' + str(rankingPoints))
+            else:  # If no winner is found, display error and exit
+                print("\n\nERROR IN SCORE ENTRY!!!\n\n")
+                sys.exit()
+            femaleRankingPosition += -1
+            # If this is the last player, assign them the highest ranking points
+            if femaleRankingPosition == 1:
+                rankingPoints = int(rankingPointsInfo[femaleRankingPosition]) * tournamentDifficulty
+                if row[1] > row[3]:
+                    femalePlayerRankings.append(row[0] + '-' + str(rankingPoints))
+                elif row[1] < row[3]:
+                    femalePlayerRankings.append(row[2] + '-' + str(rankingPoints))
+
+    # Assign prize money to top players
     def process_winnings(selfs):
+        # Assign MALE PLAYERS winnings
         count = len(malePlayerRankings) - 1
         for prize in prizeMoneyInfo:
             malePlayerRankings[count] += ("-" + prize)
             count += -1
 
+        # Assign FEMALE PLAYERS winnings
         count = len(femalePlayerRankings) - 1
         for prize in prizeMoneyInfo:
             femalePlayerRankings[count] += ("-" + prize)
             count += -1
 
+    # Displays results to the user via the prompt
     def display_results(self):
         print("The following results for tournament " + tournamentName + " have been calculated:")
+        # Displays the MALE PLAYER results
         print("Male Players:")
-        for place, rankings in enumerate(malePlayerRankings[::-1]):
+        for place, rankings in enumerate(malePlayerRankings[::-1]):  # Loops in descending order
+            # Adds players position in tournament to array
             malePlayerRankings[(len(malePlayerRankings) - (place + 1))] += ('-' + str(place + 1))
-            result = rankings.split('-')
+            result = rankings.split('-')  # Splits player information
             print("Place - " + str(place + 1) + ", Player Name - " + result[0] + ", Ranking Points - " + result[1],
                   end="")
-            if len(result) > 2:
+            if len(result) > 2:  # Only displays prize money if player has been awarded any
                 print(", Prize Money - $" + result[2])
             else:
                 print("")
 
+        # Displays the FEMALE PLAYER results
         print("Female Players:")
-        for place, rankings in enumerate(femalePlayerRankings[::-1]):
+        for place, rankings in enumerate(femalePlayerRankings[::-1]):  # Loops in descending order
+            # Adds players position in tournament to array
             femalePlayerRankings[(len(femalePlayerRankings) - (place + 1))] += ('-' + str(place + 1))
-            result = rankings.split('-')
+            result = rankings.split('-')  # Splits player information
             print("Place - " + str(place + 1) + ", Player Name - " + result[0] + ", Ranking Points - " + result[1],
                   end="")
-            if len(result) > 2:
+            if len(result) > 2:  # Only displays prize money if player has been awarded any
                 print(", Prize Money - $" + result[2])
             else:
                 print("")
 
+    # Stores results in files named by the user
     def store_result_file(self):
-        directory = str(os.path.dirname(os.path.realpath(__file__)))
+        directory = str(os.path.dirname(os.path.realpath(__file__)))  # Retrieves directory path
+        # Stores MALE PLAYER results in a file
         fileName = input("\nPlease enter the desired file name to store the MALE PLAYER results: ")
+        # Creates file using chosen name in root directory
         with open((directory + "\\" + fileName + ".csv"), 'w', newline="\n", encoding="utf-8") as csvFile:
             writer = csv.writer(csvFile, dialect='excel')
-            header = ['Place', 'Player Name', 'Ranking Points', 'Prize Money($)']
+            header = ['Place', 'Player Name', 'Ranking Points', 'Prize Money($)']  # Sets file headers
             writer.writerow(header)
+            # Writes player information in descending order to file
             for row in malePlayerRankings[::-1]:
-                data = row.split('-')
+                data = row.split('-')  # Splits player information
                 if len(data) == 4:
                     line = [str(data[3]), str(data[0]), str(data[1]), str(data[2])]
                     writer.writerow(line)
-                else:
+                else:  # If player does not have prize money
                     line = [str(data[2]), str(data[0]), str(data[1]), 'N/A']
                     writer.writerow(line)
 
+        # Stores FEMALE PLAYER results in a file
         fileName = input("\nPlease enter the desired file name to store the FEMALE PLAYER results: ")
+        # Creates file using chosen name in root directory
         with open((directory + "\\" + fileName + ".csv"), 'w', newline="\n", encoding="utf-8") as csvFile:
             writer = csv.writer(csvFile, dialect='excel')
-            header = ['Place', 'Player Name', 'Ranking Points', 'Prize Money($)']
+            header = ['Place', 'Player Name', 'Ranking Points', 'Prize Money($)']  # Sets file headers
             writer.writerow(header)
+            # Writes player information in descending order to file
             for row in femalePlayerRankings[::-1]:
-                data = row.split('-')
+                data = row.split('-')  # Splits player information
                 if len(data) == 4:
                     line = [str(data[3]), str(data[0]), str(data[1]), str(data[2])]
                     writer.writerow(line)
-                else:
+                else:  # If player does not have prize money
                     line = [str(data[2]), str(data[0]), str(data[1]), 'N/A']
                     writer.writerow(line)
 
