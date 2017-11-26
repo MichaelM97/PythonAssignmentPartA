@@ -28,9 +28,13 @@ def main():
 
     fileInfo.process_winnings()
 
-
-    print("CALL TO DISPLAY RESULTS")
     fileInfo.display_results()
+
+    userInput = input("Would you like to store these results in a file? [Y/N]: ").upper()
+
+    if userInput == 'Y':
+        fileInfo.store_result_file()
+
 
 def menu():
     print("Please select an option:\n\n1 - Read players score from file\n2 - Enter players score manually\n:: ")
@@ -250,9 +254,9 @@ class FileInformation:
             rankingPoints = int(rankingPointsInfo[maleRankingPosition]) * tournamentDifficulty
             for row in readCsv:
                 if row[1] > row[3]:
-                    malePlayerRankings.append("Player Name - " + row[2] + ", Ranking Points -" + str(rankingPoints))
+                    malePlayerRankings.append(row[2] + '-' + str(rankingPoints))
                 elif row[1] < row[3]:
-                    malePlayerRankings.append("Player Name - " + row[0] + ", Ranking Points -" + str(rankingPoints))
+                    malePlayerRankings.append(row[0] + '-' + str(rankingPoints))
                 else:
                     print("\n\nERROR IN FILE!\n\n")
                     sys.exit()
@@ -260,9 +264,9 @@ class FileInformation:
                 if maleRankingPosition == 1:
                     rankingPoints = int(rankingPointsInfo[maleRankingPosition]) * tournamentDifficulty
                     if row[1] > row[3]:
-                        malePlayerRankings.append("Player Name - " + row[0] + ", Ranking Points -" + str(rankingPoints))
+                        malePlayerRankings.append(row[0] + '-' + str(rankingPoints))
                     elif row[1] < row[3]:
-                        malePlayerRankings.append("Player Name - " + row[2] + ", Ranking Points -" + str(rankingPoints))
+                        malePlayerRankings.append(row[2] + '-' + str(rankingPoints))
 
         with open(femaleScoresFile) as csvFile:
             readCsv = csv.reader(csvFile, delimiter=',')
@@ -270,9 +274,9 @@ class FileInformation:
             rankingPoints = int(rankingPointsInfo[femaleRankingPosition]) * tournamentDifficulty
             for row in readCsv:
                 if row[1] > row[3]:
-                    femalePlayerRankings.append("Player Name - " + row[2] + ", Ranking Points -" + str(rankingPoints))
+                    femalePlayerRankings.append(row[2] + '-' + str(rankingPoints))
                 elif row[1] < row[3]:
-                    femalePlayerRankings.append("Player Name - " + row[0] + ", Ranking Points -" + str(rankingPoints))
+                    femalePlayerRankings.append(row[0] + '-' + str(rankingPoints))
                 else:
                     print("\n\nERROR IN FILE!\n\n")
                     sys.exit()
@@ -280,29 +284,74 @@ class FileInformation:
                 if femaleRankingPosition == 1:
                     rankingPoints = int(rankingPointsInfo[femaleRankingPosition]) * tournamentDifficulty
                     if row[1] > row[3]:
-                        femalePlayerRankings.append("Player Name - " + row[0] + ", Ranking Points -" + str(rankingPoints))
+                        femalePlayerRankings.append(row[0] + '-' + str(rankingPoints))
                     elif row[1] < row[3]:
-                        femalePlayerRankings.append("Player Name - " + row[2] + ", Ranking Points -" + str(rankingPoints))
+                        femalePlayerRankings.append(row[2] + '-' + str(rankingPoints))
 
     def process_winnings(selfs):
         count = len(malePlayerRankings) - 1
         for prize in prizeMoneyInfo:
-            malePlayerRankings[count] += (", Prize Money - $" + prize)
+            malePlayerRankings[count] += ("-" + prize)
             count += -1
 
         count = len(femalePlayerRankings) - 1
         for prize in prizeMoneyInfo:
-            femalePlayerRankings[count] += (", Prize Money - $" + prize)
+            femalePlayerRankings[count] += ("-" + prize)
             count += -1
 
     def display_results(self):
-        print("\n\nThe following results for tournament " + tournamentName + " have been calculated:")
+        print("The following results for tournament " + tournamentName + " have been calculated:")
         print("Male Players:")
-        for place, result in enumerate(malePlayerRankings[::-1]):
-            print("Place - " + str(place + 1) + ", " + result)
+        for place, rankings in enumerate(malePlayerRankings[::-1]):
+            malePlayerRankings[(len(malePlayerRankings) - (place + 1))] += ('-' + str(place + 1))
+            result = rankings.split('-')
+            print("Place - " + str(place + 1) + ", Player Name - " + result[0] + ", Ranking Points - " + result[1],
+                  end="")
+            if len(result) > 2:
+                print(", Prize Money - $" + result[2])
+            else:
+                print("")
 
         print("Female Players:")
-        for place, result in enumerate(femalePlayerRankings[::-1]):
-            print("Place - " + str(place + 1) + ", " + result)
+        for place, rankings in enumerate(femalePlayerRankings[::-1]):
+            femalePlayerRankings[(len(femalePlayerRankings) - (place + 1))] += ('-' + str(place + 1))
+            result = rankings.split('-')
+            print("Place - " + str(place + 1) + ", Player Name - " + result[0] + ", Ranking Points - " + result[1],
+                  end="")
+            if len(result) > 2:
+                print(", Prize Money - $" + result[2])
+            else:
+                print("")
+
+    def store_result_file(self):
+        directory = str(os.path.dirname(os.path.realpath(__file__)))
+        fileName = input("\nPlease enter the desired file name to store the MALE PLAYER results: ")
+        with open((directory + "\\" + fileName + ".csv"), 'w', newline="\n", encoding="utf-8") as csvFile:
+            writer = csv.writer(csvFile, dialect='excel')
+            header = ['Place', 'Player Name', 'Ranking Points', 'Prize Money($)']
+            writer.writerow(header)
+            for row in malePlayerRankings[::-1]:
+                data = row.split('-')
+                if len(data) == 4:
+                    line = [str(data[3]), str(data[0]), str(data[1]), str(data[2])]
+                    writer.writerow(line)
+                else:
+                    line = [str(data[2]), str(data[0]), str(data[1]), 'N/A']
+                    writer.writerow(line)
+
+        fileName = input("\nPlease enter the desired file name to store the FEMALE PLAYER results: ")
+        with open((directory + "\\" + fileName + ".csv"), 'w', newline="\n", encoding="utf-8") as csvFile:
+            writer = csv.writer(csvFile, dialect='excel')
+            header = ['Place', 'Player Name', 'Ranking Points', 'Prize Money($)']
+            writer.writerow(header)
+            for row in femalePlayerRankings[::-1]:
+                data = row.split('-')
+                if len(data) == 4:
+                    line = [str(data[3]), str(data[0]), str(data[1]), str(data[2])]
+                    writer.writerow(line)
+                else:
+                    line = [str(data[2]), str(data[0]), str(data[1]), 'N/A']
+                    writer.writerow(line)
+
 
 if __name__ == "__main__": main()
