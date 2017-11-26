@@ -26,7 +26,11 @@ def main():
                     fileInfo.process_scores()
 
 
-    print("\nFinished with a total of %d rounds..." % count)
+    fileInfo.process_winnings()
+
+
+    print("CALL TO DISPLAY RESULTS")
+    fileInfo.display_results()
 
 def menu():
     print("Please select an option:\n\n1 - Read players score from file\n2 - Enter players score manually\n:: ")
@@ -86,6 +90,10 @@ class FileInformation:
     malePlayerRankings = []
     global femalePlayerRankings
     femalePlayerRankings = []
+    global malePlayerWinners
+    malePlayerWinners = []
+    global femalePlayerWinners
+    femalePlayerWinners = []
 
     def get_score_files(self, roundNum):
         # Get MALE SCORE File Name
@@ -242,9 +250,9 @@ class FileInformation:
             rankingPoints = int(rankingPointsInfo[maleRankingPosition]) * tournamentDifficulty
             for row in readCsv:
                 if row[1] > row[3]:
-                    malePlayerRankings.append(row[2] + ',' + str(rankingPoints))
+                    malePlayerRankings.append("Player Name - " + row[2] + ", Ranking Points -" + str(rankingPoints))
                 elif row[1] < row[3]:
-                    malePlayerRankings.append(row[0] + ',' + str(rankingPoints))
+                    malePlayerRankings.append("Player Name - " + row[0] + ", Ranking Points -" + str(rankingPoints))
                 else:
                     print("\n\nERROR IN FILE!\n\n")
                     sys.exit()
@@ -252,11 +260,9 @@ class FileInformation:
                 if maleRankingPosition == 1:
                     rankingPoints = int(rankingPointsInfo[maleRankingPosition]) * tournamentDifficulty
                     if row[1] > row[3]:
-                        malePlayerRankings.append(row[0] + ',' + str(rankingPoints))
+                        malePlayerRankings.append("Player Name - " + row[0] + ", Ranking Points -" + str(rankingPoints))
                     elif row[1] < row[3]:
-                        malePlayerRankings.append(row[2] + ',' + str(rankingPoints))
-            print("MALE RANKINGS")
-            print(malePlayerRankings)
+                        malePlayerRankings.append("Player Name - " + row[2] + ", Ranking Points -" + str(rankingPoints))
 
         with open(femaleScoresFile) as csvFile:
             readCsv = csv.reader(csvFile, delimiter=',')
@@ -264,9 +270,9 @@ class FileInformation:
             rankingPoints = int(rankingPointsInfo[femaleRankingPosition]) * tournamentDifficulty
             for row in readCsv:
                 if row[1] > row[3]:
-                    femalePlayerRankings.append(row[2] + ',' + str(rankingPoints))
+                    femalePlayerRankings.append("Player Name - " + row[2] + ", Ranking Points -" + str(rankingPoints))
                 elif row[1] < row[3]:
-                    femalePlayerRankings.append(row[0] + ',' + str(rankingPoints))
+                    femalePlayerRankings.append("Player Name - " + row[0] + ", Ranking Points -" + str(rankingPoints))
                 else:
                     print("\n\nERROR IN FILE!\n\n")
                     sys.exit()
@@ -274,12 +280,29 @@ class FileInformation:
                 if femaleRankingPosition == 1:
                     rankingPoints = int(rankingPointsInfo[femaleRankingPosition]) * tournamentDifficulty
                     if row[1] > row[3]:
-                        femalePlayerRankings.append(row[0] + ',' + str(rankingPoints))
+                        femalePlayerRankings.append("Player Name - " + row[0] + ", Ranking Points -" + str(rankingPoints))
                     elif row[1] < row[3]:
-                        femalePlayerRankings.append(row[2] + ',' + str(rankingPoints))
-            print("FEMALE RANKINGS")
-            print(femalePlayerRankings)
+                        femalePlayerRankings.append("Player Name - " + row[2] + ", Ranking Points -" + str(rankingPoints))
 
+    def process_winnings(selfs):
+        count = len(malePlayerRankings) - 1
+        for prize in prizeMoneyInfo:
+            malePlayerRankings[count] += (", Prize Money - $" + prize)
+            count += -1
 
+        count = len(femalePlayerRankings) - 1
+        for prize in prizeMoneyInfo:
+            femalePlayerRankings[count] += (", Prize Money - $" + prize)
+            count += -1
+
+    def display_results(self):
+        print("\n\nThe following results for tournament " + tournamentName + " have been calculated:")
+        print("Male Players:")
+        for place, result in enumerate(malePlayerRankings[::-1]):
+            print("Place - " + str(place + 1) + ", " + result)
+
+        print("Female Players:")
+        for place, result in enumerate(femalePlayerRankings[::-1]):
+            print("Place - " + str(place + 1) + ", " + result)
 
 if __name__ == "__main__": main()
