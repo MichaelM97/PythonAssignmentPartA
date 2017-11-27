@@ -9,49 +9,76 @@ import sys
 def main():
     fileInfo = FileInformation() # Create object to access class
 
-    # Get required information from files and possibly user input
-    fileInfo.get_file_names()
-    menu()
+    fileInfo.get_file_names() # Get file names from user
 
-    # Store information from selected files
-    fileInfo.store_ranking_info()
-    fileInfo.store_prize_info()
+    while True:  # Loop allows for entry of additional tournaments
+        menu()  # User chooses if scores entered manually or via file
 
-    # Get file selection from user, and loop through to calculate top 16 players scores
-    count = 1
-    if scoreChoice == '1':
-        while maleRankingPosition > 1 and femaleRankingPosition > 1:  # While they're players remaining
-            count += 1
-            fileInfo.get_score_files(count)
-            with open(maleScoresFile) as csvFile:  # Open the selected file
-                readCsv = csv.reader(csvFile, delimiter=',')
-                if len(list(readCsv)) <= 9:  # Ensures that only top 16 players are processed
-                    fileInfo.process_file_scores()
+        # Store information from selected files
+        fileInfo.store_ranking_info()
+        fileInfo.store_prize_info()
 
-    # Get score input from user, and loop through to calculate top 16 players scores
-    elif scoreChoice == '2':
-        while maleRankingPosition > 1 and femaleRankingPosition > 1:  # While they're players remaining
-            count += 1
-            fileInfo.reset_player_names()
-            fileInfo.get_score_input(count)
-            if len(list(maleUserScores)) <= 9:  # Ensures that only top 16 players are processed
-                fileInfo.process_user_scores()
+        # Get file selection from user, and loop through to calculate top 16 players scores
+        count = 1
+        if scoreChoice == '1':
+            while maleRankingPosition > 1 and femaleRankingPosition > 1:  # While they're players remaining
+                count += 1
+                fileInfo.get_score_files(count)
+                with open(maleScoresFile) as csvFile:  # Open the selected file
+                    readCsv = csv.reader(csvFile, delimiter=',')
+                    if len(list(readCsv)) <= 9:  # Ensures that only top 16 players are processed
+                        fileInfo.process_file_scores()
 
-    # Calculate players winnings and display results
-    fileInfo.process_winnings()
-    fileInfo.display_results()
+        # Get score input from user, and loop through to calculate top 16 players scores
+        elif scoreChoice == '2':
+            while maleRankingPosition > 1 and femaleRankingPosition > 1:  # While they're players remaining
+                count += 1
+                fileInfo.reset_player_names()
+                fileInfo.get_score_input(count)
+                if len(list(maleUserScores)) <= 9:  # Ensures that only top 16 players are processed
+                    fileInfo.process_user_scores()
 
-    # Store results in a file (if users chooses to)
-    while True:
-        userInput = input("Would you like to store these results in a file? [Y/N]: ").upper()
-        if userInput == 'Y':
-            fileInfo.store_result_file()
+        # Calculate players winnings and display results
+        fileInfo.process_winnings()
+        if len(prevMaleRankings) > 0 or len(prevFemaleRankings) > 0:  # Adds previous tournament results (if they exist)
+            fileInfo.add_previous_results()
+        fileInfo.display_results()
+
+        # Store results in a file (if users chooses to)
+        while True:
+            userInput = input("Would you like to store these results in a file? [Y/N]: ").upper()
+            if userInput == 'Y':
+                fileInfo.store_result_file()
+                break
+            elif userInput == 'N':
+                print("Scores will not be saved.")
+                break
+            else:
+                print("Invalid Input!!!\n")
+
+        # Allows user to add more scores for more tournaments
+        while True:
+            userInput = input("Would you like add results for another tournament? [Y/N]: ").upper()
+            if userInput == 'Y':
+                fileInfo.store_previous_results()
+                # Clear arrays for further use
+                global malePlayerRankings
+                malePlayerRankings = []
+                global femalePlayerRankings
+                femalePlayerRankings = []
+                global prizeMoneyInfo
+                prizeMoneyInfo = []
+                extraTournament = True
+                break
+            elif userInput == 'N':
+                print("No further tournament scores will be added.")
+                extraTournament = False
+                break
+            else:
+                print("Invalid Input!!!\n")
+
+        if not extraTournament:
             break
-        elif userInput == 'N':
-            print("Scores will not be saved.")
-            break
-        else:
-            print("Invalid Input!!!\n")
 
 
 # Allows user to choose to enter scores manually or from files
@@ -132,6 +159,10 @@ class FileInformation:
     malePlayerRankings = []
     global femalePlayerRankings
     femalePlayerRankings = []
+    global prevMaleRankings
+    prevMaleRankings = []
+    global prevFemaleRankings
+    prevFemaleRankings = []
     global malePlayerWinners
     malePlayerWinners = []
     global femalePlayerWinners
@@ -525,6 +556,74 @@ class FileInformation:
         for prize in prizeMoneyInfo:
             femalePlayerRankings[count] += ("-" + prize)
             count += -1
+
+    # Stores results from previously calculated tournaments
+    def store_previous_results(self):
+        global prevMaleRankings
+        global prevFemaleRankings
+
+        # Save MALE PLAYER data from previous calculation
+        for prevPlayer in prevMaleRankings:  # Avoids double entry of players
+            if prevPlayer[0] in malePlayerRankings:
+                prevMaleRankings.remove(prevPlayer)
+        prevMaleRankings.extend(malePlayerRankings)
+
+        # Save FEMALE PLAYER data from previous calculation
+        for prevPlayer in prevFemaleRankings:  # Avoids double entry of players
+            if prevPlayer[0] in femalePlayerRankings:
+                prevFemaleRankings.remove(prevPlayer)
+        prevFemaleRankings.extend(femalePlayerRankings)
+
+    # Adds the prize money and rankings points to players (if they were previously awarded any)
+    def add_previous_results(self):
+        # Add previous MALE PLAYER data
+        for i, x in enumerate(malePlayerRankings):
+            player = x.split('-')  # Splits current player information
+            for y in prevMaleRankings:
+                prevPlayer = y.split('-')  # Splits previous player information
+                # If player names match then add previous data
+                if player[0] in prevPlayer[0]:
+                    # Adds previous RANKING POINTS
+                    if len(prevPlayer) > 1 and len(player) > 1:  # Adds previous points to current amount
+                        player[1] = (float(player[1]) + float(prevPlayer[1]))
+                    elif len(prevPlayer) > 1 >= len(player):  # Adds previous points to empty amount
+                        malePlayerRankings[i] += ("-" + str(prevPlayer[1]))
+                    # Adds previous PRIZE MONEY
+                    if len(prevPlayer) > 3 and len(player) > 2:  # Adds previous money to current amount
+                        # Removes commas for addition
+                        playerMoney = player[2].replace(',', '')
+                        prevPlayerMoney = prevPlayer[2].replace(',', '')
+                        total = (int(playerMoney) + int(prevPlayerMoney))
+                        total = format(total, ",d")  # Adds commas back
+                        # Stores updated total in array
+                        malePlayerRankings[i] = (player[0] + '-' + str(player[1]) + '-' + total)
+                    elif len(prevPlayer) > 3 >= len(player):  # Adds previous money to empty amount
+                        malePlayerRankings[i] += ("-" + str(prevPlayer[2]))
+                    break  # Ends loop once player is found
+
+        # Add previous FEMALE PLAYER data
+        for i, x in enumerate(femalePlayerRankings):
+            player = x.split('-')  # Splits current player information
+            for y in prevFemaleRankings:
+                prevPlayer = y.split('-')  # Splits previous player information
+                # If player names match then add previous data
+                if player[0] in prevPlayer[0]:
+                    # Adds previous RANKING POINTS
+                    if len(prevPlayer) > 1 and len(player) > 1:  # Adds previous points to current amount
+                        player[1] = (float(player[1]) + float(prevPlayer[1]))
+                    elif len(prevPlayer) > 1 >= len(player):  # Adds previous points to empty amount
+                        femalePlayerRankings[i] += ("-" + str(prevPlayer[1]))
+                    # Adds previous PRIZE MONEY
+                    if len(prevPlayer) > 3 and len(player) > 2:  # Adds previous money to current amount
+                        # Removes commas for addition
+                        playerMoney = player[2].replace(',', '')
+                        prevPlayerMoney = prevPlayer[2].replace(',', '')
+                        total = (int(playerMoney) + int(prevPlayerMoney))
+                        total = format(total, ",d")  # Adds commas back
+                        # Stores updated total in array
+                        femalePlayerRankings[i] = (player[0] + '-' + str(player[1]) + '-' + total)
+                    elif len(prevPlayer) > 3 >= len(player):  # Adds previous money to empty amount
+                        femalePlayerRankings[i] += ("-" + str(prevPlayer[2]))
 
     # Displays results to the user via the prompt
     def display_results(self):
