@@ -116,10 +116,13 @@ def get_valid_input():
     while True:
         try:
             userInput = input("::")
-            break
         except SyntaxError:
-            print("Invalid input!\nPlease enter again: ")
-    return userInput
+            userInput = None
+        if userInput:
+            return userInput
+            break
+        else:
+            print("Invalid input! Please enter again.")
 
 
 # Clears display screen (checks if Windows or Linux as command differs)
