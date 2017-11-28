@@ -12,7 +12,7 @@ def main():
     fileInfo.get_file_names() # Get file names from user
 
     while True:  # Loop allows for entry of additional tournaments
-        menu()  # User chooses if scores entered manually or via file
+        menu(fileInfo)  # User chooses if scores entered manually or via file
 
         # Store information from selected files
         fileInfo.store_ranking_info()
@@ -46,7 +46,8 @@ def main():
 
         # Store results in a file (if users chooses to)
         while True:
-            userInput = input("Would you like to store these results in a file? [Y/N]: ").upper()
+            print("Would you like to store these results in a file? [Y/N]: ")
+            userInput = get_valid_input().upper()
             if userInput == 'Y':
                 fileInfo.store_result_file()
                 break
@@ -58,7 +59,8 @@ def main():
 
         # Allows user to add more scores for more tournaments
         while True:
-            userInput = input("Would you like add results for another tournament? [Y/N]: ").upper()
+            print("Would you like add results for another tournament? [Y/N]: ")
+            userInput = get_valid_input().upper()
             if userInput == 'Y':
                 fileInfo.store_previous_results()
                 # Clear arrays for further use
@@ -82,16 +84,14 @@ def main():
 
 
 # Allows user to choose to enter scores manually or from files
-def menu():
+def menu(fileInfo):
     clear_screen()
-    print("Please select an option:\n\n1 - Read players score from file\n2 - Enter players score manually\n:: ")
-
     global scoreChoice
-    scoreChoice = input()
 
-    fileInfo = FileInformation()
-
+    #  Get valid user input
     while True:
+        print("Please select an option:\n\n1 - Read players score from file\n2 - Enter players score manually\n:: ")
+        scoreChoice = get_valid_input()
         if scoreChoice == '1':
             fileInfo.get_score_files(1)
             with open(maleScoresFile) as csvFile:
@@ -109,6 +109,17 @@ def menu():
             break
         else:
             print("Invalid Input!\n\n")
+
+
+# Validates a user input against blank entries
+def get_valid_input():
+    while True:
+        try:
+            userInput = input("::")
+            break
+        except SyntaxError:
+            print("Invalid input!\nPlease enter again: ")
+    return userInput
 
 
 # Clears display screen (checks if Windows or Linux as command differs)
@@ -179,7 +190,8 @@ class FileInformation:
         while True:
             for f, fileName in enumerate(fileList):
                 print(f, "-", fileName)
-            userInput = input("\nPlease select the file containing the MALE PLAYERS scores for round %d: " % roundNum)
+            print("\nPlease select the file containing the MALE PLAYERS scores for round %d: " % roundNum)
+            userInput = get_valid_input()
             if (int(userInput) < 0) or (int(userInput) > len(fileList)):
                 print("Invalid Input!!!\n")
             else:
@@ -193,7 +205,8 @@ class FileInformation:
         while True:
             for f, fileName in enumerate(fileList):
                 print(f, "-", fileName)
-            userInput = input("\nPlease select the file containing the FEMALE PLAYERS scores for round %d: " % roundNum)
+                print("\nPlease select the file containing the FEMALE PLAYERS scores for round %d: " % roundNum)
+                userInput = get_valid_input()
             if (int(userInput) < 0) or (int(userInput) > len(fileList)):
                 print("Invalid Input!!!\n")
             else:
@@ -215,7 +228,8 @@ class FileInformation:
             for i, name in enumerate(malePlayerNames):  # List all available players
                 print(i + 1, "-", name)
             while True:
-                userInput = input("\nPlease select the first player: ")
+                print("\nPlease select the first player: ")
+                userInput = get_valid_input()
                 if int(userInput) < 1 or int(userInput) > len(malePlayerNames):
                     print("Invalid Input!\n")
                 else:
@@ -224,7 +238,8 @@ class FileInformation:
             malePlayerNames.remove(malePlayerNames[int(userInput) - 1])
             # User enters the first players score
             while True:
-                firstScore = input("\nPlease enter the first players score[0-3]: ")
+                print("\nPlease enter the first players score[0-3]: ")
+                firstScore = get_valid_input()
                 if int(firstScore) < 0 or int(firstScore) > 3:
                     print("Invalid Input!\n")
                 else:
@@ -235,7 +250,8 @@ class FileInformation:
             for i, name in enumerate(malePlayerNames):  # List all available players
                 print(i + 1, "-", name)
             while True:
-                userInput = input("\nPlease select the second player: ")
+                print("\nPlease select the second player: ")
+                userInput = get_valid_input()
                 if int(userInput) < 1 or int(userInput) > len(malePlayerNames):
                     print("Invalid Input!\n")
                 else:
@@ -244,7 +260,8 @@ class FileInformation:
             malePlayerNames.remove(malePlayerNames[int(userInput) - 1])
             # User enters the second players score
             while True:
-                secondScore = input("\nPlease enter the second players score[0-3]: ")
+                print("\nPlease enter the second players score[0-3]: ")
+                secondScore = get_valid_input()
                 if int(secondScore) < 0 or int(secondScore) > 3:
                     print("Invalid Input!\n")
                 elif (int(firstScore) + int(secondScore)) > 5:
@@ -256,18 +273,19 @@ class FileInformation:
             row.append(secondScore)
             maleUserScores.append(row)  # Store data entered into global array for later processing
 
+        # Get FEMALE PLAYER scores as input
         global femaleUserScores
         femaleUserScores = []
-        # Get FEMALE PLAYER scores as input
-        clear_screen()
-        print("Entering FEMALE PLAYER scores for round %d: \n" % roundNum)
         while len(femalePlayerNames) > 1:  # While there are still female players left without a score
+            clear_screen()
+            print("Entering FEMALE PLAYER scores for round %d: \n" % roundNum)
             row = []
             # User selects first player in match
             for i, name in enumerate(femalePlayerNames):  # List all available players
                 print(i + 1, "-", name)
             while True:
-                userInput = input("\nPlease select the first player: ")
+                print("\nPlease select the first player: ")
+                userInput = get_valid_input()
                 if int(userInput) < 1 or int(userInput) > len(femalePlayerNames):
                     print("Invalid Input!\n")
                 else:
@@ -276,18 +294,19 @@ class FileInformation:
             femalePlayerNames.remove(femalePlayerNames[int(userInput) - 1])
             # User enters the first players score
             while True:
-                firstScore = input("\nPlease enter the first players score[0-3]: ")
-                if int(firstScore) < 0 or int(firstScore) > 3:
+                print("\nPlease enter the first players score[0-2]: ")
+                firstScore = get_valid_input()
+                if int(firstScore) < 0 or int(firstScore) > 2:
                     print("Invalid Input!\n")
                 else:
                     break
             row.append(firstScore)
-
             # User selects second player in match
             for i, name in enumerate(femalePlayerNames):  # List all available players
                 print(i + 1, "-", name)
             while True:
-                userInput = input("\nPlease select the second player: ")
+                print("\nPlease select the second player: ")
+                userInput = get_valid_input()
                 if int(userInput) < 1 or int(userInput) > len(femalePlayerNames):
                     print("Invalid Input!\n")
                 else:
@@ -296,13 +315,14 @@ class FileInformation:
             femalePlayerNames.remove(femalePlayerNames[int(userInput) - 1])
             # User enters the second players score
             while True:
-                secondScore = input("\nPlease enter the second players score[0-3]: ")
-                if int(secondScore) < 0 or int(secondScore) > 3:
+                print("\nPlease enter the second players score[0-2]: ")
+                secondScore = get_valid_input()
+                if int(secondScore) < 0 or int(secondScore) > 2:
                     print("Invalid Input!\n")
-                elif (int(firstScore) + int(secondScore)) > 5:
-                    print("Invalid Input! There can only be a total of 5 games per pair.\n")
-                elif int(firstScore) != 3 and int(secondScore) != 3:
-                    print("Invalid Input! One player must win 3 games, or there is no winner.\n")
+                elif (int(firstScore) + int(secondScore)) > 3:
+                    print("Invalid Input! There can only be a total of 3 games per pair.\n")
+                elif int(firstScore) != 2 and int(secondScore) != 2:
+                    print("Invalid Input! One player must win 2 games, or there is no winner.\n")
                 else:
                     break
             row.append(secondScore)
@@ -326,7 +346,8 @@ class FileInformation:
             tournamentName = 'TBS2'
             tournamentDifficulty = TBS2_DIFFICULTY
         else:
-            userInput = input("Could not find difficulty, please enter Tournament Name:")
+            print("Could not find difficulty, please enter Tournament Name -\nTAC1\nTAE21\nTAW11\nTBS2\n")
+            userInput = get_valid_input().upper()
             FileInformation.set_difficulty(self, userInput)
 
     # Allows user to select files containing required information
@@ -336,7 +357,8 @@ class FileInformation:
         while True:
             for f, fileName in enumerate(fileList):
                 print(f, "-", fileName)
-            userInput = input("\nPlease select the file containing RANKING POINTS information: ")
+            print("\nPlease select the file containing RANKING POINTS information: ")
+            userInput = get_valid_input()
             if (int(userInput) < 0) or (int(userInput) > len(fileList)):
                 print("Invalid Input!!!\n")
             else:
@@ -350,7 +372,8 @@ class FileInformation:
         while True:
             for f, fileName in enumerate(fileList):
                 print(f, "-", fileName)
-            userInput = input("\nPlease select the file containing PRIZE MONEY information: ")
+            print("\nPlease select the file containing PRIZE MONEY information: ")
+            userInput = get_valid_input()
             if (int(userInput) < 0) or (int(userInput) > len(fileList)):
                 print("Invalid Input!!!\n")
             else:
@@ -364,7 +387,8 @@ class FileInformation:
         while True:
             for f, fileName in enumerate(fileList):
                 print(f, "-", fileName)
-            userInput = input("\nPlease select the file containing MALE PLAYERS information: ")
+            print("\nPlease select the file containing MALE PLAYERS information: ")
+            userInput = get_valid_input()
             if (int(userInput) < 0) or (int(userInput) > len(fileList)):
                 print("Invalid Input!!!\n")
             else:
@@ -378,7 +402,8 @@ class FileInformation:
         while True:
             for f, fileName in enumerate(fileList):
                 print(f, "-", fileName)
-            userInput = input("\nPlease select the file containing FEMALE PLAYERS information: ")
+            print("\nPlease select the file containing FEMALE PLAYERS information: ")
+            userInput = get_valid_input()
             if (int(userInput) < 0) or (int(userInput) > len(fileList)):
                 print("Invalid Input!!!\n")
             else:
