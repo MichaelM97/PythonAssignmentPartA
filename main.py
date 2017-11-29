@@ -667,9 +667,9 @@ class FileInformation:
                             malePlayerNames.remove(row[1])
                         if row[3] in malePlayerNames:
                             malePlayerNames.remove(row[3])
-                    # Set tournament name and difficulty
-                    if row[5]:
-                        tournament = row[5]
+            # Set tournament name and difficulty
+            if row[5]:
+                tournament = row[5]
             FileInformation.set_difficulty(self, tournament)
 
         # Process FEMALE PLAYER temp file
@@ -757,31 +757,54 @@ class FileInformation:
     # Displays results to the user via the prompt
     def display_results(self):
         print("The following results for tournament " + tournamentName + " have been calculated:")
+
         # Displays the MALE PLAYER results
-        print("Male Players:")
-        for place, rankings in enumerate(malePlayerRankings[::-1]):  # Loops in descending order
+        tempPointsArray = []
+        print("Male Players in order of ranking points:")
+        for place, players in enumerate(malePlayerRankings[::-1]):  # Loops in descending order
+            player = players.split('-')  # Splits player information
             # Adds players position in tournament to array
             malePlayerRankings[(len(malePlayerRankings) - (place + 1))] += ('-' + str(place + 1))
-            result = rankings.split('-')  # Splits player information
-            print("Place - " + str(place + 1) + ", Player Name - " + result[0] + ", Ranking Points - " + result[1],
-                  end="")
-            if len(result) > 2:  # Only displays prize money if player has been awarded any
-                print(", Prize Money - $" + result[2])
-            else:
-                print("")
+            tempPointsArray.append(float(player[1]))
+        # Print in order of ranking points
+        tempPointsArray.sort()
+        tempPointsArray.reverse()
+        while len(tempPointsArray) > 1:
+            for rankings in malePlayerRankings[::-1]:
+                result = rankings.split('-')  # Splits player information
+                maxPoints = tempPointsArray[0]
+                if float(result[1]) == maxPoints:
+                    tempPointsArray.remove(maxPoints)
+                    print("Player Name - " + result[0] + ", Ranking Points - " + result[1],
+                          end="")
+                    if len(result) > 3:  # Only displays prize money if player has been awarded any
+                        print(", Prize Money - $" + result[2] + ", Place - " + result[3])
+                    else:
+                        print(", Place - " + result[2])
 
         # Displays the FEMALE PLAYER results
-        print("Female Players:")
-        for place, rankings in enumerate(femalePlayerRankings[::-1]):  # Loops in descending order
+        tempPointsArray = []
+        print("Female Players in order of ranking points:")
+        for place, players in enumerate(femalePlayerRankings[::-1]):  # Loops in descending order
+            player = players.split('-')  # Splits player information
             # Adds players position in tournament to array
             femalePlayerRankings[(len(femalePlayerRankings) - (place + 1))] += ('-' + str(place + 1))
-            result = rankings.split('-')  # Splits player information
-            print("Place - " + str(place + 1) + ", Player Name - " + result[0] + ", Ranking Points - " + result[1],
-                  end="")
-            if len(result) > 2:  # Only displays prize money if player has been awarded any
-                print(", Prize Money - $" + result[2])
-            else:
-                print("")
+            tempPointsArray.append(float(player[1]))
+        # Print in order of ranking points
+        tempPointsArray.sort()
+        tempPointsArray.reverse()
+        while len(tempPointsArray) > 1:
+            for rankings in femalePlayerRankings[::-1]:
+                result = rankings.split('-')  # Splits player information
+                maxPoints = tempPointsArray[0]
+                if float(result[1]) == maxPoints:
+                    tempPointsArray.remove(maxPoints)
+                    print("Player Name - " + result[0] + ", Ranking Points - " + result[1],
+                          end="")
+                    if len(result) > 3:  # Only displays prize money if player has been awarded any
+                        print(", Prize Money - $" + result[2] + ", Place - " + result[3])
+                    else:
+                        print(", Place - " + result[2])
 
     # Stores results in files named by the user
     def store_result_file(self):
