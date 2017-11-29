@@ -835,13 +835,28 @@ class FileInformation:
             writer = csv.writer(csvFile, dialect='excel')
             header = ['Place', 'Player Name', 'Ranking Points', 'Prize Money($)']  # Sets file headers
             writer.writerow(header)
-            # Writes player information in descending order to file
+            # Fill tempPrizeArray
+            tempPrizeArray = []
+            for players in malePlayerRankings[::-1]:  # Loops in descending order
+                player = players.split('-')  # Splits player information
+                if len(player) > 3:  # Adds money amount to temp array, if player has any
+                    tempPrizeArray.append(float(player[2]))
+            tempPrizeArray.sort()
+            tempPrizeArray.reverse()
+
+            # Writes player information in order of prize money to file
+            while len(tempPrizeArray) > 1:
+                for row in malePlayerRankings[::-1]:
+                    data = row.split('-')  # Splits player information
+                    if len(data) > 3:
+                        if float(data[2]) == tempPrizeArray[0]:
+                            tempPrizeArray.remove(tempPrizeArray[0])
+                            line = [str(data[3]), str(data[0]), str(data[1]), str(data[2])]
+                            writer.writerow(line)
+            # Displays players who didn't win money
             for row in malePlayerRankings[::-1]:
                 data = row.split('-')  # Splits player information
-                if len(data) == 4:
-                    line = [str(data[3]), str(data[0]), str(data[1]), str(data[2])]
-                    writer.writerow(line)
-                else:  # If player does not have prize money
+                if len(data) <= 3:
                     line = [str(data[2]), str(data[0]), str(data[1]), 'N/A']
                     writer.writerow(line)
 
@@ -866,13 +881,28 @@ class FileInformation:
             writer = csv.writer(csvFile, dialect='excel')
             header = ['Place', 'Player Name', 'Ranking Points', 'Prize Money($)']  # Sets file headers
             writer.writerow(header)
-            # Writes player information in descending order to file
+            # Fill tempPrizeArray
+            tempPrizeArray = []
+            for players in femalePlayerRankings[::-1]:  # Loops in descending order
+                player = players.split('-')  # Splits player information
+                if len(player) > 3:  # Adds money amount to temp array, if player has any
+                    tempPrizeArray.append(float(player[2]))
+            tempPrizeArray.sort()
+            tempPrizeArray.reverse()
+
+            # Writes player information in order of prize money to file
+            while len(tempPrizeArray) > 1:
+                for row in femalePlayerRankings[::-1]:
+                    data = row.split('-')  # Splits player information
+                    if len(data) > 3:
+                        if float(data[2]) == tempPrizeArray[0]:
+                            tempPrizeArray.remove(tempPrizeArray[0])
+                            line = [str(data[3]), str(data[0]), str(data[1]), str(data[2])]
+                            writer.writerow(line)
+            # Displays players who didn't win money
             for row in femalePlayerRankings[::-1]:
                 data = row.split('-')  # Splits player information
-                if len(data) == 4:
-                    line = [str(data[3]), str(data[0]), str(data[1]), str(data[2])]
-                    writer.writerow(line)
-                else:  # If player does not have prize money
+                if len(data) <= 3:
                     line = [str(data[2]), str(data[0]), str(data[1]), 'N/A']
                     writer.writerow(line)
 
