@@ -4,6 +4,7 @@
 import csv
 import os
 import sys
+import string
 
 
 def main():
@@ -12,18 +13,6 @@ def main():
     fileInfo.get_file_names() # Get file names from user
 
     while True:  # Loop allows for entry of additional tournaments
-
-        # Check for presence of temp files, set global flag accordingly
-        global tempMaleFile
-        tempMaleFile = False
-        global tempFemaleFile
-        tempFemaleFile = False
-        if 'TEMPMALE.csv' in fileList:
-            tempMaleFile = True
-            fileList.remove('TEMPMALE.csv')
-        elif 'TEMPFEMALE.csv' in fileList:
-            tempFemaleFile = True
-            fileList.remove('TEMPFEMALE.csv')
 
         menu(fileInfo)  # User chooses if scores entered manually or via file
 
@@ -44,10 +33,13 @@ def main():
 
         # Get score input from user, and loop through to calculate top 16 players scores
         elif scoreChoice == '2':
+            global tempFiles
+            if tempMaleFile:
+                tempFiles = True
             while maleRankingPosition > 1 and femaleRankingPosition > 1:  # While they're players remaining
                 count += 1
                 fileInfo.reset_player_names()
-                count = fileInfo.get_score_input(count, tempMaleFile)
+                fileInfo.get_score_input(count, tempFiles)
                 if len(list(maleUserScores)) <= 9:  # Ensures that only top 16 players are processed
                     fileInfo.process_user_scores()
 
@@ -71,8 +63,10 @@ def main():
                 print("Invalid Input!!!\n")
 
         # Deletes temp files
-        os.remove(directoryPath + "\\" + "TEMPMALE.csv")
-        os.remove(directoryPath + "\\" + "TEMPFEMALE.csv")
+        if tempMaleFile:
+            os.remove(directoryPath + "\\" + "TEMPMALE.csv")
+        if tempFemaleFile:
+            os.remove(directoryPath + "\\" + "TEMPFEMALE.csv")
 
         # Allows user to add more scores for more tournaments
         while True:
@@ -111,24 +105,27 @@ def menu(fileInfo):
         scoreChoice = get_valid_input()
         if scoreChoice == '1':
             fileInfo.get_score_files(1)
+            fileInfo.set_difficulty(maleScoresFile)  # Attempt to pull difficulty from file name
             with open(maleScoresFile) as csvFile:
                 readCsv = csv.reader(csvFile, delimiter=',')
                 if len(list(readCsv)) <= 9:  # Ensures that only top 16 players are processed
                     fileInfo.process_file_scores()
-            fileInfo.set_difficulty(maleScoresFile)  # Set difficulty using file name
             break
         elif scoreChoice == '2':
             fileInfo.store_player_names()  # Stores player names so user can identify who scored what
+            if tempMaleFile:  # Informs user their data will be added
+                print("DATA FROM PREVIOUSLY CLOSED ENTRY DETECTED!!! This has been re-added for you.\n")
+            else:  # Ask user to input difficulty if it cannot be pulled from file
+                fileInfo.set_difficulty("")  # Set difficulty using user input
             fileInfo.get_score_input(1, tempMaleFile)
             if len(list(maleUserScores)) <= 9:  # Ensures that only top 16 players are processed
                 fileInfo.process_user_scores()
-            fileInfo.set_difficulty("")  # Set difficulty using user input
             break
         else:
             print("Invalid Input!\n\n")
 
 
-# Validates user inputs
+# Validates user inputs (Only used for single character or integer entries)
 def get_valid_input():
     while True:
         try:  # Validates against blank entries
@@ -177,6 +174,18 @@ class FileInformation:
         fileList.remove('main.py')
     if '.git' in fileList:
         fileList.remove('.git')
+
+    # Check for presence of temp files, set global flag accordingly
+    global tempMaleFile
+    tempMaleFile = False
+    global tempFemaleFile
+    tempFemaleFile = False
+    if 'TEMPMALE.csv' in fileList:
+        tempMaleFile = True
+        fileList.remove('TEMPMALE.csv')
+    if 'TEMPFEMALE.csv' in fileList:
+        tempFemaleFile = True
+        fileList.remove('TEMPFEMALE.csv')
 
     # Retrieves directory path
     global directoryPath
@@ -253,11 +262,7 @@ class FileInformation:
 
         # Process temp file information (if it exists)
         if tempFilesExist:
-            print("DATA FROM PREVIOUSLY CLOSED ENTRY DETECTED!!! This will be re-added for you.\n")
-            roundNum = FileInformation.process_temp_files(self)
-            roundNum = int(roundNum)  # Casts to int as this is how it is used
-            global tempFiles
-            tempFiles = False
+            FileInformation.process_temp_files(self, roundNum)
 
         # Get MALE PLAYER scores as input
         while len(malePlayerNames) > 1:  # While there are still male players left without a score
@@ -314,9 +319,10 @@ class FileInformation:
             maleUserScores.append(row)  # Store data entered into global array for later processing
 
             # Adds most recent male match entry to temp file
-            with open((directoryPath + "\\" + "TEMPMALE.csv"), 'w', newline="\n", encoding="utf-8") as csvFile:
-                writer = csv.writer(csvFile, dialect='excel')
-                writer.writerow([roundNum] + row)
+            csvFile = open((directoryPath + "\\" + "TEMPMALE.csv"), 'a', newline="\n")
+            writer = csv.writer(csvFile, dialect='excel')
+            writer.writerow([roundNum] + row + [tournamentName])
+            csvFile.close()
 
         # Get FEMALE PLAYER scores as input
         while len(femalePlayerNames) > 1:  # While there are still female players left without a score
@@ -371,10 +377,11 @@ class FileInformation:
             row.append(secondScore)
             femaleUserScores.append(row)  # Store data entered into global array for later processing
 
-            # Adds most recent female match entry to temp file
-            with open((directoryPath + "\\" + "TEMPFEMALE.csv"), 'w', newline="\n", encoding="utf-8") as csvFile:
-                writer = csv.writer(csvFile, dialect='excel')
-                writer.writerow([roundNum] + row)
+            # Adds most recent male match entry to temp file
+            csvFile = open((directoryPath + "\\" + "TEMPFEMALE.csv"), 'a', newline="\n")
+            writer = csv.writer(csvFile, dialect='excel')
+            writer.writerow([roundNum] + row + [tournamentName])
+            csvFile.close()
 
         return roundNum  # Returns in-case it was updated by files
 
@@ -399,7 +406,7 @@ class FileInformation:
             print("Could not find difficulty, please enter Tournament Name -\nTAC1\nTAE21\nTAW11\nTBS2")
             while True:  # Avoids invalid user inputs such as 'TAC19'
                 try:  # Validates against blank entries
-                    userInput = input("::")
+                    userInput = input("::").upper()
                 except SyntaxError:
                     userInput = 'q'  # Invalid placeholder
                 if 'TAC1' or 'TBS2' in userInput and len(userInput) == 4:
@@ -643,7 +650,7 @@ class FileInformation:
             count += -1
 
     # Processes information from previously interrupt calculations
-    def process_temp_files(self):
+    def process_temp_files(self, roundNum):
         global maleUserScores
         global femaleUserScores
 
@@ -651,28 +658,19 @@ class FileInformation:
         if tempMaleFile:
             with open(directoryPath + "\\" + "TEMPMALE.csv") as csvFile:
                 readCsv = csv.reader(csvFile, delimiter=',')
-                # Find highest round entered
-                highestRound = 0
-                for row in readCsv:
-                    if int(row[0]) > highestRound:
-                        highestRound = int(row[0])
-                csvFile.seek(0)  # Reset file position
                 # Adds matches from current round and removes them from selection
                 for row in readCsv:
-                    if int(row[0]) is highestRound:
+                    if int(row[0]) == roundNum:
                         match = [row[1]] + [row[2]] + [row[3]] + [row[4]]
                         maleUserScores.append(match)
-                        malePlayerNames.remove(row[1])
-                        malePlayerNames.remove(row[3])
-                csvFile.seek(0)  # Reset file position
-                #Remove losers as options
-                for row in readCsv:
-                    if row[2] > row[4]:
-                        if row[3] in malePlayerNames:
-                            malePlayerNames.remove(row[3])
-                    elif row[2] < row[4]:
                         if row[1] in malePlayerNames:
                             malePlayerNames.remove(row[1])
+                        if row[3] in malePlayerNames:
+                            malePlayerNames.remove(row[3])
+                    # Set tournament name and difficulty
+                    if row[5]:
+                        tournament = row[5]
+            FileInformation.set_difficulty(self, tournament)
 
         # Process FEMALE PLAYER temp file
         if tempFemaleFile:
@@ -680,22 +678,13 @@ class FileInformation:
                 readCsv = csv.reader(csvFile, delimiter=',')
                 # Adds matches from current round and removes them from selection
                 for row in readCsv:
-                    if int(row[0]) == highestRound:
+                    if int(row[0]) == roundNum:
                         match = [row[1]] + [row[2]] + [row[3]] + [row[4]]
                         femaleUserScores.append(match)
-                        femalePlayerNames.remove(row[1])
-                        femalePlayerNames.remove(row[3])
-                csvFile.seek(0)  # Reset file position
-                # Remove losers as options
-                for row in readCsv:
-                    if row[2] > row[4]:
-                        if row[3] in femalePlayerNames:
-                            femalePlayerNames.remove(row[3])
-                    elif row[2] < row[4]:
                         if row[1] in femalePlayerNames:
                             femalePlayerNames.remove(row[1])
-
-        return highestRound
+                        if row[3] in femalePlayerNames:
+                            femalePlayerNames.remove(row[3])
 
     # Stores results from previously calculated tournaments
     def store_previous_results(self):
@@ -796,8 +785,23 @@ class FileInformation:
 
     # Stores results in files named by the user
     def store_result_file(self):
+        invalidChars = set(string.punctuation.replace("_", ""))  # Allows set symbols in fileName
         # Stores MALE PLAYER results in a file
-        fileName = input("\nPlease enter the desired file name to store the MALE PLAYER results: ")
+        # Gets valid file name
+        print("\nPlease enter the desired file name to store the MALE PLAYER results: ")
+        while True:
+            try:  # Validates against blank entries
+                fileName = input("::")
+            except SyntaxError:
+                fileName = None
+            if any(char in invalidChars for char in fileName):
+                print("Invalid character entered!")
+            elif fileName is None:
+                print("Please enter something!")
+            elif (fileName + ".csv") in os.listdir():
+                print("That name is taken by another file!")
+            else:
+                break
         # Creates file using chosen name in root directory
         with open((directoryPath + "\\" + fileName + ".csv"), 'w', newline="\n", encoding="utf-8") as csvFile:
             writer = csv.writer(csvFile, dialect='excel')
@@ -814,7 +818,21 @@ class FileInformation:
                     writer.writerow(line)
 
         # Stores FEMALE PLAYER results in a file
-        fileName = input("\nPlease enter the desired file name to store the FEMALE PLAYER results: ")
+        # Gets valid file name
+        print("\nPlease enter the desired file name to store the FEMALE PLAYER results: ")
+        while True:
+            try:  # Validates against blank entries
+                fileName = input("::")
+            except SyntaxError:
+                fileName = None
+            if any(char in invalidChars for char in fileName):
+                print("Invalid character entered!")
+            elif fileName is None:
+                print("Please enter something!")
+            elif (fileName + ".csv") in os.listdir():
+                print("That name is taken by another file!")
+            else:
+                break
         # Creates file using chosen name in root directoryPath
         with open((directoryPath + "\\" + fileName + ".csv"), 'w', newline="\n", encoding="utf-8") as csvFile:
             writer = csv.writer(csvFile, dialect='excel')
